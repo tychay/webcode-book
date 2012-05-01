@@ -1,0 +1,176 @@
+Download Ubuntu Server:
+	- http://www.ubuntu.com/ > Download > Server: Downlaod and Install 
+	- http://www.ubuntu.com/download/server/download, Latest, 64-bit
+	- ubuntu-11.10-server-amd64.iso onto Downloads
+Install Ubuntu Server on Parallels:
+	http://forum.parallels.com/showthread.php?t=210195
+	- start Parallels
+	- Hit the + on Parallels Virtual Machines (or Fike > New…)
+	- Double-click Install WIndows or another OS from DVD or image File (highlight Install Windows… and click Continue)
+	- Locate iso in /Downloads from drop down.
+	- Paralells will auto-detect OS. (If it fails, select "Ubuntu Linux" list or use Other Linux Kernel (2.6))
+	- Name it (I used "Ubuntu-11.10-server-amd64 Vanilla") and click "Install"
+	- Install Ubuntu:
+		- Choose "English"
+		- "Install"
+		- "English" "United States" "Yes" "English (US)"x2
+		- it will install the software components for installation
+		- hostname "ubuntu" and TAB "Continue"
+		- "Pacific Time"
+		- "Guided + LVM", "SCSI3", "Yes"
+		- "max" (68.5GB) TAB "Continue" "Yes" [Amazon "small" uses 160GB. May be able to change using Settings below?]
+		- it will install Linux software into virtual machine
+		- Go through su account creation [create username and password: I am using "ubuntu"]
+		- "No Automatic Updates" (not hard to use "apt-get update" instead. Should keep vm images updated on own schedule)
+		- Packages (none: install manually)
+		- install GRUB (boot loader is correct, this is a virtual machine)
+		
+Configure Ubuntu server:
+	ec2 instances: http://aws.amazon.com/ec2/instance-types/
+	processors: 1
+	Memory: 1GB (Small: 1.7GB)
+	HDD: 68.5GB (Small:160GB)
+
+	- Optimization: "Enable Adaptive Hypervisor" (Get more CPU by focusing on app)
+	- Power "Longer Battery life"
+	- save settings
+	- $ shutdown -h now
+Cloning:
+	- "Virtual Machine > Take Snapshot…"
+	- Choose "File > Clone to Template…" (make template of ubuntu for further use)
+	- Chose "File > Clone…" (make LAMP install base)
+	fix broken networking is up on clone:
+		http://uksysadmin.wordpress.com/2011/10/14/upgrade-to-ubuntu-11-10-problem-waiting-for-network-configuration-then-black-screen-solution/
+		http://kb.parallels.com/8102
+		- $ sudo -i
+		- # vim /etc/udev/rules.d/70-persistent-net.rules
+		- delete the first first PCI line (has parent image MAC address for ethernet)
+		- replace "name=eth1" on remaining line with "name=eth0"
+	Rename computer:
+		- # vim /etc/hostname (rename to whatever you want)
+		- # usermod -l <newusername> <oldusername>
+		- # vim /etc/hosts (use same name to help with hostname resolution)
+		- # reboot
+		- [on mac] $ vim /etc/hosts (use same name to help with hostname resolution)
+Configure Ubuntu for LAMP development:
+	- Launch VM instance and log in
+	Install Parallels Tools on Ubuntu Server:
+		http://download.parallels.com/desktop/v5/docs/en/Parallels_Desktop_Users_Guide/22570.htm
+		http://kb.parallels.com/en/5560
+		http://blog.newchaos.org/installing-parallels-tools-into-ubuntu-server
+		(doesn't work with latest 12.04)
+		- $ sudo apt-get install linux-headers-$(uname -r) build-essential
+		- menu command "Virtual Machine > Install Parallels Tools…"
+		- $ sudo mount -o exec /dev/cdrom /media/cdromcd (for me the cdrom didn't install)
+		- $ cd /media/cdrom
+		- $ sudo ./install
+		- "Next" x3
+		- reboot
+	Install Lamp:
+		http://www.howtoforge.com/ubuntu_lamp_for_newbies
+		- $ sudo -i
+		- # apt-get install apache2
+		- $ ifconfig (to get IP address)
+		- In Safari http://10.211.55.4/ (or whatever, you should get lamp)
+		- # apt-get install php5 libapache2-mod-php5 
+		- # sudo /etc/init.d/apache2 restart
+		- # vim /var/www/phpinfo.php
+		- add text "<?php phpinfo(); ?> and save
+		- In Safari http://10.211.55.4/phpinfo.php
+		- # apt-get install mysql-server
+		- (add password for root on mysql)
+		- (vim /etc/mysql/my.cnf (change the bind address to public IP so others can bind))
+		- # apt-get install libapache2-mod-auth-mysql php5-mysql phpmyadmin
+		- go to http://10.211.55.4/phpmyadmin
+	PHP development:
+		http://ubuntuforums.org/showthread.php?t=525257
+		- $ sudo -i
+		- # apt-get install php5-dev php-pear
+		- # pecl install xdebug
+		- # sudo vim /etc/php5/apache2/conf.d/xdebug.ini
+	; configuration for php XDEBUG
+	zend_extension=/usr/lib/php5/20090626/xdebug.so
+
+	; General errors
+	display_errors = On
+	display_startup_errors = On
+	html_errors = On
+	error_reporting = E_ALL
+	
+		- # service apache2 graceful
+		- add  to phpinfo.php in between the <?php's
+trigger_error ('this is an error');
+var_dump($_SERVER);
+		- visit phpinfo page
+	Clone and image:
+		- # shutdown -h now
+		- follow templating instuctions above
+
+
+Configure MediaWiki development environment:
+	install common stuff:
+		- $ sudo su -
+		- # apt-get install ack-grep (for searching)
+	install web development directories:
+	- create folder "~/Developer/mwdev" (and "www", "conf.d" "php.d")
+	- Share it with MediaWiki dev install (/media/psf/mwdev)
+	- clone from template (follow instructions above)
+	- launch vm instance and log in
+	- $ sudo vim /etc/apache2/apache2.conf
+Include /media/psf/mwdev/conf.d
+	- $ cp /etc/apache2/sites-enabled /media/psf/mwdev/conf.d/000-default.conf
+	- $ sudo mv /etc/apache2/sites-enabled/* /etc/apache2/sites-available/
+	- $ vim /media/psf/mwdev/conf.d/000-default-conf
+add "ServerName mwdev"
+change "/var/www" to "/media/psf/mwdev/www"
+	- $ cp /etc/php5/apache2/conf.d/*.ini /media/psf/mwdev/php.d/
+	- $ sudo rm -rf /etc/php5/apache2/conf.d
+	- $ sudo ln -s /media/psf/mwdev/php.d /etc/php5/apache2/conf.d
+	- $ sudo service apache2 restart
+
+Configure BuyWith5 development environment:
+	- clone LAMP
+	- follow MediaWiki dev environment "common stuff" (don't install xdebug or "sudo pecl uninstall xdebug")
+	- follow MediaWiki dev environment "web development directories" (but replace "mwdev" with "bw5")
+	set up NFS instead of pfs due to bugs in implmentation
+	https://bugs.php.net/bug.php?id=55364
+	http://forum.parallels.com/showthread.php?t=112065
+	
+	config issues for scripts to work
+	- $ pushd /etc/php5/cli
+	- $ sudo rm conf.d
+	- $ sudo ln -s /media/psf/bw5/php.d conf.d
+	- $ popd
+	clone source code
+	- git clone buywith5 into ~/Developer/bw5/BuyWith5
+	- git clone TGIframework into ~/Developer/bw5/BuyWith5/website/tgif
+	- $ ln -s /media/psf/bw5 ~/bw5
+	- $ pushd ~/bw5/BuyWith5/website/tgif
+	- $ ./bs/bootstrap.sh
+	- remember to move "extension=*" lines into php.d directory as new files
+	- add a file for runkit.so (because it wasn't installed using pecl)
+	- $ cd ..
+	- $ ./boostrap.sh
+	- $ popd
+	- (instructions on handling config file placement)
+
+	- fix tgif to work with globals
+	- fix buywith5 to work
+	- get php configuraiton from admin server
+	- redo build script to allow local host
+	- remove password requirement on vm instance
+
+Links:
+	EC2:
+		http://aws.amazon.com/ec2/faqs/
+		https://help.ubuntu.com/community/EC2StartersGuide
+		http://cloud.ubuntu.com/ami/
+		http://uec-images.ubuntu.com/releases/ (download at bottom, ami starter at top)
+		vm import: http://aws.amazon.com/ec2/vmimport/
+
+	virtual box:
+		http://www.noah.org/wiki/VirtualBox_notes-
+	Virtuzzo Containers:
+		http://www.parallels.com/products/pvc/deployment-resources/#c4386
+	Xen:
+		http://www.xen.org/
