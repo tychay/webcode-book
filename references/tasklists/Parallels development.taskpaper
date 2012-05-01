@@ -61,11 +61,12 @@ Configure Ubuntu for LAMP development:
 		(doesn't work with latest 12.04)
 		- $ sudo apt-get install linux-headers-$(uname -r) build-essential
 		- menu command "Virtual Machine > Install Parallels Tools…"
-		- $ sudo mount -o exec /dev/cdrom /media/cdromcd (for me the cdrom didn't install)
+		- $ sudo mount -o exec /dev/cdrom /media/cdrom (for me the cdrom didn't install)
 		- $ cd /media/cdrom
 		- $ sudo ./install
 		- "Next" x3
 		- reboot
+		- (if already installed go to /usr/lib/parallels-tools and run ./install)
 	Install Lamp:
 		http://www.howtoforge.com/ubuntu_lamp_for_newbies
 		- $ sudo -i
