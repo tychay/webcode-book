@@ -5,7 +5,7 @@ Download Ubuntu Server:
 Install Ubuntu Server on Parallels:
 	http://forum.parallels.com/showthread.php?t=210195
 	- start Parallels
-	- Hit the + on Parallels Virtual Machines (or Fike > New…)
+	- Hit the + on Parallels Virtual Machines (or File > New…)
 	- Double-click Install WIndows or another OS from DVD or image File (highlight Install Windows… and click Continue)
 	- Locate iso in /Downloads from drop down.
 	- Paralells will auto-detect OS. (If it fails, select "Ubuntu Linux" list or use Other Linux Kernel (2.6))
@@ -130,16 +130,18 @@ change "/var/www" to "/media/psf/mwdev/www"
 	- $ sudo service apache2 restart
 
 Configure BuyWith5 development environment:
+user/pass: same as on slicehost
+
 	- clone LAMP
 	- follow MediaWiki dev environment "common stuff" (don't install xdebug or "sudo pecl uninstall xdebug")
 	- follow MediaWiki dev environment "web development directories" (but replace "mwdev" with "bw5")
-	set up NFS instead of pfs due to bugs in implmentation
+	set up NFS instead of pfs due to bugs in implmentation ) (see below for instructions)
 	https://bugs.php.net/bug.php?id=55364
 	http://forum.parallels.com/showthread.php?t=112065
 	
 	config issues for scripts to work
-	- $ pushd /etc/php5/cli
-	- $ sudo rm conf.d
+	- $ pushd /etc/php5
+	- $ sudo mv conf.d oldconf.d
 	- $ sudo ln -s /media/psf/bw5/php.d conf.d
 	- $ popd
 	clone source code
@@ -154,12 +156,35 @@ Configure BuyWith5 development environment:
 	- $ ./boostrap.sh
 	- $ popd
 	- (instructions on handling config file placement)
-
+	other useful stuff
+	- $ sudo apt-get install ack=gre[
+	
 	- fix tgif to work with globals
 	- fix buywith5 to work
-	- get php configuraiton from admin server
+	- get php configuration from admin server
 	- redo build script to allow local host
 	- remove password requirement on vm instance
+
+NFS share  Mac OSX to ubuntu:
+	http://www.williamrobertson.net/documents/nfs-mac-linux-setup.html
+	http://www.behanna.org/osx/nfs/howto1.html
+	(note that the pfs file system parallels installs doesn't play nice with some PHP shell commands)
+	http://www.cyberciti.biz/faq/missing-codepage-helper-program-other-error/
+- download and install NFSManager from http://www.bresink.com/osx/NFSManager.html
+- launch NFSManager (type admin password)
+- "new share"
+- Share Definitions: navigate to the bw5-git shared folder (checkout) and add it
+- Share Definitions: Uncheck the "read only"
+- Share Definitions: User Mapping: Use customized mapping (see advanced options)
+- Share Definitions: Access persmissions: Allow listed clients only (see advanced options)
+- Share Definitions > Show advanced options > Access Restrictions, add IP of vm instance to client list.
+- Share Definitions > Show advanced options > User Mapping, map all accessing users to a different itdentiy as specified below (chose your username)
+- "Apply" (password)
+- System Preferences > Security & Privacy > Firewall (make it on, or leave it off)
+- $ sudo /vim /etc/fstab
+- add line "10.211.55.2:<path_to_drive> <local mount point> nfs" (e.g. "10.211.55.2:/Volumes/HDD/Users/Tychay/Developer/buywith5/bw5-git /bw5 nfs")
+- $ sudo apt-get install nfs-common
+- $ sudo reboot
 
 Links:
 	EC2:
