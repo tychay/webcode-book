@@ -35,6 +35,9 @@ Configure Ubuntu server:
 	- Power "Longer Battery life"
 	- save settings
 	- $ shutdown -h now
+What version of ubuntu:
+- https://help.ubuntu.com/community/CheckingYourUbuntuVersion
+- $ lsb_release -a
 Cloning:
 	- "Virtual Machine > Take Snapshot…"
 	- Choose "File > Clone to Template…" (make template of ubuntu for further use)
@@ -46,12 +49,20 @@ Cloning:
 		- # vim /etc/udev/rules.d/70-persistent-net.rules
 		- delete the first first PCI line (has parent image MAC address for ethernet)
 		- replace "name=eth1" on remaining line with "name=eth0"
+		- may also want to update bind-address for file: /etc/mysql/my.cnf
+		- (you will need to reboot for changes to be effective)
 	Rename computer:
 		- # vim /etc/hostname (rename to whatever you want)
 		- # usermod -l <newusername> <oldusername>
 		- # vim /etc/hosts (use same name to help with hostname resolution)
 		- # reboot
 		- [on mac] $ vim /etc/hosts (use same name to help with hostname resolution)
+
+Reinstalling MySQL:
+	- http://stuffthatspins.com/2011/01/08/ubuntu-10-x-completely-remove-and-clean-mysql-installation/
+	- $ apt-get --purge remove mysql-server mysql-client mysql-common
+	- $ apt-get autoremove
+	- $ apt-get autoclean
 Configure Ubuntu for LAMP development:
 	- Launch VM instance and log in
 	Install Parallels Tools on Ubuntu Server:
